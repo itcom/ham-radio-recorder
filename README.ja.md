@@ -3,7 +3,7 @@
 **[English version (README.md)](README.md)**
 
 アマチュア無線の受信音声をスケジュール録音するChrome拡張機能（MV3）です。  
-WebSocket経由（UDP-Bridge）でCAT/CI-Vコマンドを使い、リグの周波数・モードを自動制御して録音します。
+WebSocket経由で[UDP-Bridge](https://github.com/itcom/udp-bridge)を通じてCAT/CI-Vコマンドを送り、リグの周波数・モードを自動制御して録音します。
 
 ---
 
@@ -53,7 +53,7 @@ graph LR
 
 - [Node.js](https://nodejs.org/) v18以上
 - [Yarn](https://yarnpkg.com/) または npm
-- [UDP-Bridge](https://github.com/example/udp-bridge) をローカルで実行（デフォルト: `ws://127.0.0.1:17800/ws`）
+- [UDP-Bridge](https://github.com/itcom/udp-bridge) をローカルで実行（デフォルト: `ws://127.0.0.1:17800/ws`）
 - USBオーディオデバイス（リグの音声出力をPCに入力）
 - Google Chrome（v116以上、Offscreen API対応）
 

@@ -3,7 +3,7 @@
 **[日本語版はこちら (README.ja.md)](README.ja.md)**
 
 Chrome Extension (MV3) for scheduled radio monitoring and recording.  
-Controls your rig via CAT/CI-V commands over WebSocket ([UDP-Bridge](https://github.com/example/udp-bridge)) and records received audio automatically.
+Controls your rig via CAT/CI-V commands over WebSocket ([UDP-Bridge](https://github.com/itcom/udp-bridge)) and records received audio automatically.
 
 ---
 
@@ -53,7 +53,7 @@ graph LR
 
 - [Node.js](https://nodejs.org/) v18+
 - [Yarn](https://yarnpkg.com/) or npm
-- [UDP-Bridge](https://github.com/example/udp-bridge) running locally (default: `ws://127.0.0.1:17800/ws`)
+- [UDP-Bridge](https://github.com/itcom/udp-bridge) running locally (default: `ws://127.0.0.1:17800/ws`)
 - USB audio device connected (radio audio output → PC audio input)
 - Google Chrome (v116+ for Offscreen API support)
 
