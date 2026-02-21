@@ -61,7 +61,16 @@ graph LR
 
 ## Getting Started
 
-### 1. Install & Build
+### 1. Install from Release (recommended)
+
+1. Download the latest `.zip` from [Releases](https://github.com/itcom/ham-radio-recorder/releases)
+2. Extract the zip to a folder
+3. Open `chrome://extensions`
+4. Enable **Developer mode** (toggle in top right)
+5. Click **Load unpacked**
+6. Select the extracted folder
+
+### 2. Build from Source (for developers)
 
 ```bash
 # Install dependencies
@@ -74,7 +83,7 @@ yarn dev
 yarn build
 ```
 
-### 2. Load into Chrome
+After building, load the extension:
 
 1. Open `chrome://extensions`
 2. Enable **Developer mode** (toggle in top right)
