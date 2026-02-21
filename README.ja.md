@@ -21,18 +21,12 @@ WebSocket経由（UDP-Bridge）でCAT/CI-Vコマンドを使い、リグの周�
 
 ## 動作の仕組み
 
-```
-┌────────────┐     WebSocket      ┌────────────┐     CAT/CI-V     ┌──────┐
-│  拡張機能    │ ◄──────────────► │ UDP-Bridge │ ◄──────────────► │ リグ  │
-│  (Chrome)  │                    │  (Go app)  │                   │      │
-└────────────┘                    └────────────┘                   └──────┘
-      │
-      │  getUserMedia
-      ▼
-┌────────────┐
-│ USBオーディオ │  (リグの音声出力 → PCの音声入力)
-│  デバイス     │
-└────────────┘
+```mermaid
+graph LR
+    A["拡張機能<br/>(Chrome)"] <-->|WebSocket| B["UDP-Bridge<br/>(Go app)"]
+    B <-->|CAT / CI-V| C["リグ"]
+    A -->|getUserMedia| D["USBオーディオデバイス"]
+    D -.-|"リグ音声出力 → PC音声入力"| A
 ```
 
 1. スケジュールのアラームが発火すると、WebSocket経由でUDP-Bridgeに接続

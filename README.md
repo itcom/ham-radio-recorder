@@ -21,18 +21,12 @@ Controls your rig via CAT/CI-V commands over WebSocket ([UDP-Bridge](https://git
 
 ## How It Works
 
-```
-┌────────────┐     WebSocket      ┌────────────┐     CAT/CI-V     ┌──────┐
-│  Extension │ ◄──────────────► │ UDP-Bridge │ ◄──────────────► │  Rig │
-│  (Chrome)  │                    │  (Go app)  │                   │      │
-└────────────┘                    └────────────┘                   └──────┘
-      │
-      │  getUserMedia
-      ▼
-┌────────────┐
-│ USB Audio  │  (radio audio output → PC audio input)
-│  Device    │
-└────────────┘
+```mermaid
+graph LR
+    A["Extension<br/>(Chrome)"] <-->|WebSocket| B["UDP-Bridge<br/>(Go app)"]
+    B <-->|CAT / CI-V| C["Rig"]
+    A -->|getUserMedia| D["USB Audio Device"]
+    D -.-|"radio audio out → PC audio in"| A
 ```
 
 1. When a schedule's alarm fires, the extension connects to UDP-Bridge via WebSocket
