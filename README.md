@@ -1,219 +1,220 @@
 # Ham Radio Recorder 🎙
 
-**[日本語版はこちら (README.ja.md)](README.ja.md)**
+**[English version (README.en.md)](README.en.md)**
 
-Chrome Extension (MV3) for scheduled radio monitoring and recording.  
-Controls your rig via CAT/CI-V commands over WebSocket ([UDP-Bridge](https://github.com/itcom/udp-bridge)) and records received audio automatically.
-
----
-
-## Features
-
-- **Per-Schedule Rig Control** — Each schedule defines its own frequency, mode, and recording window
-- **Scheduled Recording** — Daily repeating or one-shot alarms via `chrome.alarms`
-- **Audio Recording** — Records from USB audio input using `MediaRecorder` (WebM/Opus)
-- **Offscreen Recording** — Uses Chrome's Offscreen Document API (MV3 compliant)
-- **Inline Editing** — Edit any schedule's parameters directly from the Options page
-- **Manual Trigger** — Test any schedule with the ▶ Run button without waiting for the alarm
-- **Status Popup** — Real-time recording status, progress bar, and activity log
+アマチュア無線の受信音声をスケジュール録音するChrome拡張機能（MV3）です。  
+WebSocket経由で[UDP-Bridge](https://github.com/itcom/udp-bridge)を通じてCAT/CI-Vコマンドを送り、リグの周波数・モードを自動制御して録音します。
 
 ---
 
-## How It Works
+## 特徴
+
+- **スケジュールごとのリグ制御** — スケジュールごとに周波数・モード・録音時間を設定
+- **スケジュール録音** — Daily（毎日繰り返し）またはOne-shot（1回限り）
+- **音声録音** — USBオーディオ入力からMediaRecorderで録音（WebM/Opus形式）
+- **オフスクリーン録音** — ChromeのOffscreen Document APIを使用（MV3準拠）
+- **インライン編集** — Options画面から直接スケジュールを編集
+- **手動テスト実行** — ▶ Runボタンでアラームを待たずに即座にテスト録音
+- **ステータスポップアップ** — 録音状態、プログレスバー、アクティビティログ表示
+
+---
+
+## 動作の仕組み
 
 ```mermaid
 graph LR
-    A["Extension<br/>(Chrome)"] <-->|WebSocket| B["UDP-Bridge<br/>(Go app)"]
-    B <-->|CAT / CI-V| C["Rig"]
-    A -->|getUserMedia| D["USB Audio Device"]
-    D -.-|"radio audio out → PC audio in"| A
+    A["拡張機能<br/>(Chrome)"] <-->|WebSocket| B["UDP-Bridge<br/>(Go app)"]
+    B <-->|CAT / CI-V| C["リグ"]
+    A -->|getUserMedia| D["USBオーディオデバイス"]
+    D -.-|"リグ音声出力 → PC音声入力"| A
 ```
 
-1. When a schedule's alarm fires, the extension connects to UDP-Bridge via WebSocket
-2. Sends `setFreq` and `setMode` commands to tune the rig
-3. Opens an offscreen document and starts recording from the selected USB audio device
-4. Records for the duration defined by start/end time, then saves as `.webm`
+1. スケジュールのアラームが発火すると、WebSocket経由でUDP-Bridgeに接続
+2. `setFreq`・`setMode`コマンドを送信してリグを制御
+3. オフスクリーンドキュメントを開き、USBオーディオデバイスから録音開始
+4. 開始時刻〜終了時刻の長さで録音し、`.webm`ファイルとして保存
 
 ---
 
-## Architecture
+## アーキテクチャ
 
-| Component        | File                              | Role                                     |
-| ---------------- | --------------------------------- | ---------------------------------------- |
-| Service Worker   | `background/index.ts`             | Alarms, WS commands, orchestration       |
-| Message Handlers | `background/messages/*.ts`        | Popup/Options → SW communication         |
-| Offscreen        | `offscreen.html` + `offscreen.ts` | Audio recording engine                   |
-| Popup            | `popup.tsx`                       | Status display, stop/reset controls      |
-| Options          | `options.tsx`                     | Schedule management, connection settings |
-| Libraries        | `lib/`                            | WebSocket client, storage helpers, types |
-
----
-
-## Prerequisites
-
-- [Node.js](https://nodejs.org/) v18+
-- [Yarn](https://yarnpkg.com/) or npm
-- [UDP-Bridge](https://github.com/itcom/udp-bridge) running locally (default: `ws://127.0.0.1:17800/ws`)
-- USB audio device connected (radio audio output → PC audio input)
-- Google Chrome (v116+ for Offscreen API support)
+| コンポーネント     | ファイル                          | 役割                                           |
+| ------------------ | --------------------------------- | ---------------------------------------------- |
+| Service Worker     | `background/index.ts`             | アラーム管理、WSコマンド、オーケストレーション |
+| メッセージハンドラ | `background/messages/*.ts`        | Popup/Options → SW間通信                       |
+| オフスクリーン     | `offscreen.html` + `offscreen.ts` | 音声録音エンジン                               |
+| ポップアップ       | `popup.tsx`                       | ステータス表示、停止/リセット操作              |
+| 設定画面           | `options.tsx`                     | スケジュール管理、接続設定                     |
+| ライブラリ         | `lib/`                            | WebSocketクライアント、ストレージ、型定義      |
 
 ---
 
-## Getting Started
+## 必要なもの
 
-### 1. Install from Release (recommended)
+- [UDP-Bridge](https://github.com/itcom/udp-bridge) をローカルで実行（デフォルト: `ws://127.0.0.1:17800/ws`）
+- USBオーディオデバイス（リグの音声出力をPCに入力）
+- Google Chrome（v116以上、Offscreen API対応）
 
-1. Download the latest `.zip` from [Releases](https://github.com/itcom/ham-radio-recorder/releases)
-2. Extract the zip to a folder
-3. Open `chrome://extensions`
-4. Enable **Developer mode** (toggle in top right)
-5. Click **Load unpacked**
-6. Select the extracted folder
+---
 
-### 2. Build from Source (for developers)
+## セットアップ
+
+### 1. リリースからインストール（推奨）
+
+1. [Releases](https://github.com/itcom/ham-radio-recorder/releases) から最新の `.zip` をダウンロード
+2. zipを任意のフォルダに展開
+3. `chrome://extensions` を開く
+4. 右上の **デベロッパーモード** を有効化
+5. **パッケージ化されていない拡張機能を読み込む** をクリック
+6. 展開したフォルダを選択
+
+### 2. ソースからビルド（開発者向け）
+
+- [Node.js](https://nodejs.org/) v18以上
+- [Yarn](https://yarnpkg.com/) または npm
 
 ```bash
-# Install dependencies
+# 依存関係のインストール
 yarn install
 
-# Development (with hot reload)
+# 開発サーバー（ホットリロード付き）
 yarn dev
 
-# Production build
+# プロダクションビルド
 yarn build
 ```
 
-After building, load the extension:
+ビルド後、拡張機能を読み込み:
 
-1. Open `chrome://extensions`
-2. Enable **Developer mode** (toggle in top right)
-3. Click **Load unpacked**
-4. Select `build/chrome-mv3-dev` (development) or `build/chrome-mv3-prod` (production)
+1. `chrome://extensions` を開く
+2. 右上の **デベロッパーモード** を有効化
+3. **パッケージ化されていない拡張機能を読み込む** をクリック
+4. `build/chrome-mv3-dev`（開発用）または `build/chrome-mv3-prod`（本番用）を選択
 
-### 3. Grant Permissions
+### 3. 権限の付与
 
-On the Options page:
-1. Click **🔓 Grant Mic** to allow microphone access
-2. Click **🔄 Refresh Devices** to list available audio inputs
-3. Select your USB audio device from the dropdown
-
----
-
-## Usage
-
-### Setting Up a Recording Schedule
-
-1. Open the extension **Options** page (right-click extension icon → Options)
-2. In the **⏰ Recording Schedules** section, fill in:
-
-| Field | Description                              | Example   |
-| ----- | ---------------------------------------- | --------- |
-| Start | Recording start time (HH:MM)             | `07:00`   |
-| End   | Recording end time (HH:MM)               | `07:30`   |
-| Freq  | Frequency in MHz                         | `145.500` |
-| Mode  | Operating mode                           | `FM`      |
-| Data  | Data mode checkbox                       | unchecked |
-| Type  | `Daily` (repeating) or `One-shot` (once) | `Daily`   |
-
-3. Click **+ Add Schedule**
-
-> **Note:** Duration is automatically calculated from start/end time. Cross-midnight schedules are supported (e.g., 23:30 → 00:15 = 45 min).
-
-### Managing Schedules
-
-| Action             | How                                        |
-| ------------------ | ------------------------------------------ |
-| **Enable/Disable** | Toggle the checkbox on the left            |
-| **Edit**           | Click ✏ to open inline editor, then ✓ Save |
-| **Manual Test**    | Click ▶ Run to start recording immediately |
-| **Delete**         | Click ✕ to remove                          |
-
-- **Daily** schedules repeat every day at the specified time
-- **One-shot** schedules are automatically deleted after their alarm fires
-- **▶ Run** is for testing — it does not affect the schedule's enabled state
-
-### Connection Settings
-
-Configure the WebSocket connection to UDP-Bridge:
-
-| Setting  | Default     | Description            |
-| -------- | ----------- | ---------------------- |
-| Host     | `127.0.0.1` | UDP-Bridge host        |
-| Port     | `17800`     | UDP-Bridge port        |
-| Path     | `/ws`       | WebSocket path         |
-| Rig Port | `0`         | Rig port (0 = default) |
-
-Click **🔌 Test Connection** to verify connectivity.
-
-### Filename Template
-
-Customize recording filenames using placeholders:
-
-| Placeholder | Replaced with           | Example     |
-| ----------- | ----------------------- | ----------- |
-| `{date}`    | Date in YYYYMMDD format | `20260221`  |
-| `{time}`    | Time in HHMMSS format   | `070000`    |
-| `{freq}`    | Frequency in Hz         | `145500000` |
-| `{mode}`    | Operating mode          | `FM`        |
-
-Default template: `{date}_{time}_{freq}_{mode}`  
-Example output: `20260221_070000_145500000_FM.webm`
-
-### Popup
-
-The popup shows:
-- Current recording state and progress
-- Next scheduled alarm time
-- Recent activity log
-- **◼ Stop** button (during recording) or **↺ Reset** (on error)
+Options画面で:
+1. **🔓 Grant Mic** をクリックしてマイクのアクセスを許可
+2. **🔄 Refresh Devices** をクリックしてオーディオ入力デバイスの一覧を取得
+3. ドロップダウンからUSBオーディオデバイスを選択
 
 ---
 
-## UDP-Bridge Protocol
+## 使い方
 
-The extension communicates with UDP-Bridge using JSON over WebSocket:
+### 録音スケジュールの設定
+
+1. 拡張機能の **Options** 画面を開く（拡張機能アイコンを右クリック → オプション）
+2. **⏰ Recording Schedules** セクションで以下を入力:
+
+| 項目  | 説明                                        | 例        |
+| ----- | ------------------------------------------- | --------- |
+| Start | 録音開始時刻（HH:MM）                       | `07:00`   |
+| End   | 録音終了時刻（HH:MM）                       | `07:30`   |
+| Freq  | 周波数（MHz単位）                           | `145.500` |
+| Mode  | 運用モード                                  | `FM`      |
+| Data  | データモード チェックボックス               | OFF       |
+| Type  | `Daily`（毎日）または `One-shot`（1回限り） | `Daily`   |
+
+3. **+ Add Schedule** をクリック
+
+> **注意:** 録音時間はStart/Endから自動計算されます。深夜をまたぐスケジュールにも対応しています（例: 23:30 → 00:15 = 45分）。
+
+### スケジュールの管理
+
+| 操作              | 方法                                         |
+| ----------------- | -------------------------------------------- |
+| **有効/無効切替** | 左のチェックボックスを切り替え               |
+| **編集**          | ✏ をクリックしてインライン編集、✓ Saveで保存 |
+| **手動テスト**    | ▶ Run をクリックして即座に録音開始           |
+| **削除**          | ✕ をクリックして削除                         |
+
+- **Daily** スケジュールは毎日指定された時刻に繰り返し実行
+- **One-shot** スケジュールはアラーム実行後に自動削除
+- **▶ Run** はテスト用 — スケジュールの有効状態は変更されません
+
+### 接続設定
+
+UDP-BridgeへのWebSocket接続を設定:
+
+| 設定項目 | デフォルト  | 説明                         |
+| -------- | ----------- | ---------------------------- |
+| Host     | `127.0.0.1` | UDP-Bridgeのホスト           |
+| Port     | `17800`     | UDP-Bridgeのポート           |
+| Path     | `/ws`       | WebSocketのパス              |
+| Rig Port | `0`         | リグのポート（0=デフォルト） |
+
+**🔌 Test Connection** をクリックして接続を確認できます。
+
+### ファイル名テンプレート
+
+プレースホルダーを使って録音ファイル名をカスタマイズ:
+
+| プレースホルダー | 置換内容           | 例          |
+| ---------------- | ------------------ | ----------- |
+| `{date}`         | YYYYMMDD形式の日付 | `20260221`  |
+| `{time}`         | HHMMSS形式の時刻   | `070000`    |
+| `{freq}`         | 周波数（Hz）       | `145500000` |
+| `{mode}`         | 運用モード         | `FM`        |
+
+デフォルト: `{date}_{time}_{freq}_{mode}`  
+出力例: `20260221_070000_145500000_FM.webm`
+
+### ポップアップ
+
+ポップアップには以下が表示されます:
+- 録音状態とプログレスバー
+- 次回スケジュールのアラーム時刻
+- 最近のアクティビティログ
+- **◼ Stop** ボタン（録音中）または **↺ Reset** ボタン（エラー時）
+
+---
+
+## UDP-Bridgeプロトコル
+
+WebSocket経由でJSON形式のコマンドを送受信します:
 
 ```jsonc
-// Set frequency
+// 周波数設定
 → {"type":"setFreq","port":0,"freq":145500000}
 ← {"type":"setFreqResult","success":true}
 
-// Set mode
+// モード設定
 → {"type":"setMode","port":0,"mode":"FM","data":false}
 ← {"type":"setModeResult","success":true}
 ```
 
 ---
 
-## Troubleshooting
+## トラブルシューティング
 
-| Problem                    | Solution                                                                   |
-| -------------------------- | -------------------------------------------------------------------------- |
-| No audio devices listed    | Click **🔓 Grant Mic** first, then **🔄 Refresh Devices**                    |
-| WebSocket connection fails | Ensure UDP-Bridge is running and check host/port settings                  |
-| Recording doesn't start    | Check Chrome developer tools console for the service worker                |
-| Alarm doesn't fire         | Chrome may throttle alarms; ensure the extension is enabled                |
-| Recording cuts off early   | The backup stop alarm fires if the offscreen document becomes unresponsive |
+| 問題                             | 対処法                                                                         |
+| -------------------------------- | ------------------------------------------------------------------------------ |
+| オーディオデバイスが表示されない | **🔓 Grant Mic** を先にクリックしてから **🔄 Refresh Devices**                   |
+| WebSocket接続失敗                | UDP-Bridgeが起動しているか確認し、ホスト/ポート設定を確認                      |
+| 録音が開始されない               | Chromeの開発者ツールでService Workerのコンソールを確認                         |
+| アラームが発火しない             | Chromeがアラームを制限する場合があります。拡張機能が有効か確認                 |
+| 録音が途中で切れる               | オフスクリーンドキュメントが無応答の場合、バックアップ停止アラームが発火します |
 
 ---
 
-## Development
+## 開発
 
 ```bash
-# Dev server with hot reload
+# ホットリロード付き開発サーバー
 yarn dev
 
-# Production build
+# プロダクションビルド
 yarn build
 
-# The build script also runs:
+# ビルドスクリプトの処理内容:
 # 1. plasmo build
-# 2. scripts/inline-chunks.mjs (inlines code-split chunks for SW compatibility)
-# 3. Copies offscreen.html to build output
+# 2. scripts/inline-chunks.mjs（SW互換のためコード分割チャンクをインライン化）
+# 3. offscreen.htmlをビルド出力にコピー
 ```
 
 ---
 
-## License
+## ライセンス
 
 MIT
