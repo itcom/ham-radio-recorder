@@ -1,15 +1,18 @@
 {
   "name": "ham-radio-recorder",
-  "displayName": "Ham radio recorder",
+  "displayName": "Ham Radio Recorder",
   "version": "0.0.1",
   "description": "Ham radio recorder for scheduled monitoring: controls your rig via CAT/CI-V (WebSocket) and records received audio automatically.",
   "author": "okuyama@itcom.ne.jp",
   "scripts": {
-    "dev": "plasmo dev",
-    "build": "plasmo build",
+    "dev": "plasmo dev && node scripts/inline-chunks.mjs",
+    "dev:watch": "plasmo dev",
+    "build": "plasmo build && node scripts/inline-chunks.mjs && cp offscreen.html build/chrome-mv3-prod/",
+    "copy-offscreen": "cp offscreen.html build/chrome-mv3-dev/ 2>/dev/null; cp offscreen.html build/chrome-mv3-prod/ 2>/dev/null; echo 'offscreen.html copied'",
     "package": "plasmo package"
   },
   "dependencies": {
+    "@plasmohq/messaging": "^0.6.2",
     "plasmo": "0.90.5",
     "react": "18.2.0",
     "react-dom": "18.2.0"
@@ -24,8 +27,18 @@
     "typescript": "5.3.3"
   },
   "manifest": {
+    "permissions": [
+      "offscreen",
+      "alarms",
+      "storage",
+      "downloads"
+    ],
     "host_permissions": [
-      "https://*/*"
+      "ws://127.0.0.1:*/*"
     ]
+  },
+  "@parcel/bundler-default": {
+    "minBundles": 10000000,
+    "minBundleSize": 10000000
   }
 }

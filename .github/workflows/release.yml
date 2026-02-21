@@ -1,10 +1,15 @@
-name: Submit to Chrome Web Store
+name: Release
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
 
 jobs:
-  submit:
+  release:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,10 +30,17 @@ jobs:
       - name: Package extension
         run: |
           cd build/chrome-mv3-prod
-          zip -r ../../chrome-mv3-prod.zip .
+          zip -r ../../ham-radio-recorder-${{ github.ref_name }}.zip .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: ham-radio-recorder-${{ github.ref_name }}.zip
 
       - name: Publish to Chrome Web Store
+        if: vars.ENABLE_CWS_PUBLISH == 'true'
         uses: PlasmoHQ/bpp@v3
         with:
           keys: ${{ secrets.SUBMIT_KEYS }}
-          artifact: chrome-mv3-prod.zip
+          artifact: ham-radio-recorder-${{ github.ref_name }}.zip
